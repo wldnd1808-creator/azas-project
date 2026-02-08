@@ -52,6 +52,8 @@ temp/
 .cursor-server/
 .cursor/
 *.cursor/
+.cursor/
+.config/
 
 # System files
 .bash_history
