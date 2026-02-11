@@ -1,0 +1,49 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.6.2
+2 info using node@v24.13.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\gkstm\manufacturing-dashboard\.npmrc
+5 silly config load:file:C:\Users\gkstm\.npmrc
+6 silly config load:file:C:\Users\gkstm\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:C:\Users\gkstm\manufacturing-dashboard\.npm-cache\_logs\2026-01-28T01_25_16_546Z-
+10 verbose logfile C:\Users\gkstm\manufacturing-dashboard\.npm-cache\_logs\2026-01-28T01_25_16_546Z-debug-0.log
+11 silly logfile done cleaning log files
+12 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with ECONNREFUSED
+13 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+14 silly idealTree buildDeps
+15 silly fetch manifest mysql2@^3.6.5
+16 silly packumentCache full:https://registry.npmjs.org/mysql2 cache-miss
+17 silly fetch manifest bcryptjs@^2.4.3
+18 silly packumentCache full:https://registry.npmjs.org/bcryptjs cache-miss
+19 silly fetch manifest dotenv@^16.4.5
+20 silly packumentCache full:https://registry.npmjs.org/dotenv cache-miss
+21 silly fetch manifest @types/bcryptjs@^2.4.6
+22 silly packumentCache full:https://registry.npmjs.org/@types%2fbcryptjs cache-miss
+23 silly placeDep ROOT @types/bcryptjs@ OK for: manufacturing-dashboard@0.1.0 want: ^2.4.6
+24 silly placeDep ROOT bcryptjs@ OK for: manufacturing-dashboard@0.1.0 want: ^2.4.3
+25 silly placeDep ROOT dotenv@ OK for: manufacturing-dashboard@0.1.0 want: ^16.4.5
+26 silly placeDep ROOT mysql2@ OK for: manufacturing-dashboard@0.1.0 want: ^3.6.5
+27 verbose stack Error: request to https://registry.npmjs.org/@types%2fbcryptjs failed: cache mode is 'only-if-cached' but no cached response is available.
+27 verbose stack     at cacheFetch (C:\Program Files\nodejs\node_modules\npm\node_modules\make-fetch-happen\lib\cache\index.js:12:13)
+27 verbose stack     at async fetch (C:\Program Files\nodejs\node_modules\npm\node_modules\make-fetch-happen\lib\fetch.js:98:7)
+27 verbose stack     at async RegistryFetcher.packument (C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\registry.js:90:19)
+27 verbose stack     at async RegistryFetcher.manifest (C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\registry.js:128:23)
+27 verbose stack     at async #fetchManifest (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\build-ideal-tree.js:1227:20)
+27 verbose stack     at async #nodeFromEdge (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\build-ideal-tree.js:1065:19)
+27 verbose stack     at async #buildDepStep (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\build-ideal-tree.js:929:11)
+27 verbose stack     at async Arborist.buildIdealTree (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\build-ideal-tree.js:182:7)
+27 verbose stack     at async Promise.all (index 1)
+27 verbose stack     at async Arborist.reify (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\reify.js:114:5)
+28 error code ENOTCACHED
+29 error request to https://registry.npmjs.org/@types%2fbcryptjs failed: cache mode is 'only-if-cached' but no cached response is available.
+30 silly unfinished npm timer reify 1769563517063
+31 silly unfinished npm timer reify:loadTrees 1769563517064
+32 verbose cwd C:\Users\gkstm\manufacturing-dashboard
+33 verbose os Windows_NT 10.0.19045
+34 verbose node v24.13.0
+35 verbose npm  v11.6.2
+36 verbose exit 1
+37 verbose code 1
+38 error A complete log of this run can be found in: C:\Users\gkstm\manufacturing-dashboard\.npm-cache\_logs\2026-01-28T01_25_16_546Z-debug-0.log

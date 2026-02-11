@@ -1,0 +1,41 @@
+{
+  "name": "manufacturing-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:watch": "node scripts/start-watch-server.mjs",
+    "dev:auto": "node scripts/auto-index-on-start.mjs & next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "index:docs": "node scripts/index-docs.mjs",
+    "watch:docs": "node scripts/watch-docs.mjs",
+    "auto-index": "node -e \"fetch('http://localhost:3000/api/auto-index').then(r=>r.json()).then(d=>console.log(JSON.stringify(d,null,2))).catch(e=>console.error(e))\""
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@langchain/core": "^1.1.17",
+    "@langchain/google-genai": "^2.1.13",
+    "bcryptjs": "^2.4.3",
+    "chromadb": "^2.0.0",
+    "dotenv": "^16.6.1",
+    "langchain": "^1.2.14",
+    "lucide-react": "^0.344.0",
+    "mysql2": "^3.16.2",
+    "next": "^14.2.0",
+    "pdf-parse": "^2.4.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5"
+  }
+}

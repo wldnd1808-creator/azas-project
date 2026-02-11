@@ -1,0 +1,76 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.6.2
+2 info using node@v24.13.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\gkstm\manufacturing-dashboard\.npmrc
+5 silly config load:file:C:\Users\gkstm\.npmrc
+6 silly config load:file:C:\Users\gkstm\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install"
+9 verbose logfile logs-max:10 dir:C:\Users\gkstm\manufacturing-dashboard\_logs\2026-01-28T01_26_09_698Z-
+10 verbose logfile C:\Users\gkstm\manufacturing-dashboard\_logs\2026-01-28T01_26_09_698Z-debug-0.log
+11 silly logfile done cleaning log files
+12 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with ECONNREFUSED
+13 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+14 silly idealTree buildDeps
+15 silly fetch manifest mysql2@^3.6.5
+16 silly packumentCache full:https://registry.npmjs.org/mysql2 cache-miss
+17 silly fetch manifest bcryptjs@^2.4.3
+18 silly packumentCache full:https://registry.npmjs.org/bcryptjs cache-miss
+19 silly fetch manifest dotenv@^16.4.5
+20 silly packumentCache full:https://registry.npmjs.org/dotenv cache-miss
+21 silly fetch manifest @types/bcryptjs@^2.4.6
+22 silly packumentCache full:https://registry.npmjs.org/@types%2fbcryptjs cache-miss
+23 silly placeDep ROOT @types/bcryptjs@ OK for: manufacturing-dashboard@0.1.0 want: ^2.4.6
+24 silly placeDep ROOT bcryptjs@ OK for: manufacturing-dashboard@0.1.0 want: ^2.4.3
+25 silly placeDep ROOT dotenv@ OK for: manufacturing-dashboard@0.1.0 want: ^16.4.5
+26 silly placeDep ROOT mysql2@ OK for: manufacturing-dashboard@0.1.0 want: ^3.6.5
+27 silly fetch manifest fsevents@~2.3.2
+28 silly packumentCache full:https://registry.npmjs.org/fsevents cache-miss
+29 silly placeDep node_modules/chokidar fsevents@ OK for: chokidar@3.6.0 want: ~2.3.2
+30 silly fetch manifest @next/swc-darwin-arm64@14.2.33
+31 silly packumentCache full:https://registry.npmjs.org/@next%2fswc-darwin-arm64 cache-miss
+32 silly fetch manifest @next/swc-darwin-x64@14.2.33
+33 silly packumentCache full:https://registry.npmjs.org/@next%2fswc-darwin-x64 cache-miss
+34 silly fetch manifest @next/swc-linux-arm64-gnu@14.2.33
+35 silly packumentCache full:https://registry.npmjs.org/@next%2fswc-linux-arm64-gnu cache-miss
+36 silly fetch manifest @next/swc-linux-arm64-musl@14.2.33
+37 silly packumentCache full:https://registry.npmjs.org/@next%2fswc-linux-arm64-musl cache-miss
+38 silly fetch manifest @next/swc-linux-x64-gnu@14.2.33
+39 silly packumentCache full:https://registry.npmjs.org/@next%2fswc-linux-x64-gnu cache-miss
+40 silly fetch manifest @next/swc-linux-x64-musl@14.2.33
+41 silly packumentCache full:https://registry.npmjs.org/@next%2fswc-linux-x64-musl cache-miss
+42 silly fetch manifest @next/swc-win32-arm64-msvc@14.2.33
+43 silly packumentCache full:https://registry.npmjs.org/@next%2fswc-win32-arm64-msvc cache-miss
+44 silly fetch manifest @next/swc-win32-ia32-msvc@14.2.33
+45 silly packumentCache full:https://registry.npmjs.org/@next%2fswc-win32-ia32-msvc cache-miss
+46 silly placeDep node_modules/next @next/swc-darwin-arm64@ OK for: next@14.2.35 want: 14.2.33
+47 silly placeDep node_modules/next @next/swc-darwin-x64@ OK for: next@14.2.35 want: 14.2.33
+48 silly placeDep node_modules/next @next/swc-linux-arm64-gnu@ OK for: next@14.2.35 want: 14.2.33
+49 silly placeDep node_modules/next @next/swc-linux-arm64-musl@ OK for: next@14.2.35 want: 14.2.33
+50 silly placeDep node_modules/next @next/swc-linux-x64-gnu@ OK for: next@14.2.35 want: 14.2.33
+51 silly placeDep node_modules/next @next/swc-linux-x64-musl@ OK for: next@14.2.35 want: 14.2.33
+52 silly placeDep node_modules/next @next/swc-win32-arm64-msvc@ OK for: next@14.2.35 want: 14.2.33
+53 silly placeDep node_modules/next @next/swc-win32-ia32-msvc@ OK for: next@14.2.35 want: 14.2.33
+54 verbose stack Error: request to https://registry.npmjs.org/@types%2fbcryptjs failed: cache mode is 'only-if-cached' but no cached response is available.
+54 verbose stack     at cacheFetch (C:\Program Files\nodejs\node_modules\npm\node_modules\make-fetch-happen\lib\cache\index.js:12:13)
+54 verbose stack     at async fetch (C:\Program Files\nodejs\node_modules\npm\node_modules\make-fetch-happen\lib\fetch.js:98:7)
+54 verbose stack     at async RegistryFetcher.packument (C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\registry.js:90:19)
+54 verbose stack     at async RegistryFetcher.manifest (C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\registry.js:128:23)
+54 verbose stack     at async #fetchManifest (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\build-ideal-tree.js:1227:20)
+54 verbose stack     at async #nodeFromEdge (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\build-ideal-tree.js:1065:19)
+54 verbose stack     at async #buildDepStep (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\build-ideal-tree.js:929:11)
+54 verbose stack     at async Arborist.buildIdealTree (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\build-ideal-tree.js:182:7)
+54 verbose stack     at async Promise.all (index 1)
+54 verbose stack     at async Arborist.reify (C:\Program Files\nodejs\node_modules\npm\node_modules\@npmcli\arborist\lib\arborist\reify.js:114:5)
+55 error code ENOTCACHED
+56 error request to https://registry.npmjs.org/@types%2fbcryptjs failed: cache mode is 'only-if-cached' but no cached response is available.
+57 silly unfinished npm timer reify 1769563570764
+58 silly unfinished npm timer reify:loadTrees 1769563570765
+59 verbose cwd C:\Users\gkstm\manufacturing-dashboard
+60 verbose os Windows_NT 10.0.19045
+61 verbose node v24.13.0
+62 verbose npm  v11.6.2
+63 verbose exit 1
+64 verbose code 1
+65 error A complete log of this run can be found in: C:\Users\gkstm\manufacturing-dashboard\_logs\2026-01-28T01_26_09_698Z-debug-0.log
