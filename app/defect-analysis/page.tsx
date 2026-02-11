@@ -148,40 +148,53 @@ function HumidityWarningModal({
   isOpen,
   onClose,
   onApprove,
-  onViewDetail,
+  currentHumidity,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onApprove: () => void;
-  onViewDetail: () => void;
+  currentHumidity: number;
 }) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div className="relative w-full max-w-md bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden">
-        <div className="px-6 pt-6 pb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-4 text-xs font-semibold text-amber-700 bg-amber-100 rounded-lg">
-            <span>⚠</span>
-            <span>예측 기반 경고</span>
+      <div className="absolute inset-0 bg-red-600/80 backdrop-blur-sm" aria-hidden="true" />
+      <div className="relative w-full max-w-lg bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl border-4 border-red-700 shadow-2xl overflow-hidden animate-pulse">
+        <div className="px-8 pt-8 pb-6">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <span className="text-5xl animate-bounce">⚠️</span>
+            <h3 className="text-2xl font-bold text-white">습도 위험 경고</h3>
           </div>
-          <h3 className="text-lg font-bold text-slate-900 mb-2">습도 위험 사전 차단 알림</h3>
-          <p className="text-sm text-slate-600 leading-relaxed">
-            🔍 습도 변수가 위험 구간에 진입 중입니다. 제습 설비를 가동할까요?
+          
+          {/* 현재 위험 수치를 크게 표시 */}
+          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 mb-6 border-2 border-white/30">
+            <div className="text-center">
+              <div className="text-sm font-semibold text-white/90 mb-2">현재 위험 수치</div>
+              <div className="text-7xl font-bold text-white drop-shadow-lg">
+                {Math.round(currentHumidity)}%
+              </div>
+              <div className="text-lg font-semibold text-white/90 mt-2">
+                기준치 72% 초과
+              </div>
+            </div>
+          </div>
+
+          <p className="text-base text-white leading-relaxed text-center mb-6 font-medium">
+            🔍 습도 변수가 위험 구간에 진입했습니다. 제습 설비를 가동하거나 상황을 확인해주세요.
           </p>
         </div>
-        <div className="flex gap-3 px-6 pb-6">
+        <div className="flex gap-3 px-8 pb-8">
           <button
             onClick={onApprove}
-            className="flex-1 px-4 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex-1 px-6 py-4 font-bold text-white bg-blue-700 rounded-xl hover:bg-blue-800 transition-colors shadow-lg hover:shadow-xl"
           >
             설비 제어 승인
           </button>
           <button
-            onClick={onViewDetail}
-            className="flex-1 px-4 py-3 font-semibold text-slate-700 bg-slate-200 rounded-lg hover:bg-slate-300 transition-colors"
+            onClick={onClose}
+            className="flex-1 px-6 py-4 font-bold text-white bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition-colors border-2 border-white/50 shadow-lg hover:shadow-xl"
           >
-            상세 데이터 보기
+            상황 인지
           </button>
         </div>
       </div>
@@ -252,9 +265,6 @@ export default function DefectAnalysisPage() {
     } catch (_) {}
   };
 
-  const handleViewDetail = () => {
-    setShowWarning(false);
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -301,7 +311,7 @@ export default function DefectAnalysisPage() {
         isOpen={showWarning}
         onClose={() => setShowWarning(false)}
         onApprove={handleApprove}
-        onViewDetail={handleViewDetail}
+        currentHumidity={currentHumidity}
       />
     </div>
   );
