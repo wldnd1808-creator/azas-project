@@ -51,7 +51,8 @@ export default function EfficiencyPage() {
     ],
   };
 
-  const currentData = efficiencyData[selectedPeriod];
+  type EfficiencyItem = { time?: string; day?: string; dayLabel?: string; week?: string; efficiency: number; uptime: number; downtime?: number };
+  const currentData = efficiencyData[selectedPeriod] as EfficiencyItem[];
   const avgEfficiency = currentData.reduce((sum, d) => sum + d.efficiency, 0) / currentData.length;
   const avgUptime = currentData.reduce((sum, d) => sum + d.uptime, 0) / currentData.length;
   const maxEfficiency = Math.max(...currentData.map(d => d.efficiency));
@@ -161,7 +162,7 @@ export default function EfficiencyPage() {
                           </div>
                         </div>
                         <div className="mt-2 text-xs text-slate-600">
-                          {('time' in item ? item.time : 'week' in item ? item.week : ('dayLabel' in item ? item.dayLabel : item.day)) || item.week}
+                          {(item.time ?? item.week ?? item.dayLabel ?? item.day) ?? ''}
                         </div>
                       </div>
                     );
@@ -219,10 +220,10 @@ export default function EfficiencyPage() {
                       {language === 'ko' ? '가동률 vs 다운타임' : 'Uptime vs Downtime'}
                     </h4>
                     <div className="space-y-2">
-                      {efficiencyData.week.map((item, index) => (
+                      {efficiencyData.week.map((item: EfficiencyItem, index) => (
                         <div key={index} className="text-sm">
                           <div className="flex justify-between mb-1">
-                            <span className="text-slate-600">{('dayLabel' in item ? item.dayLabel : item.day)}</span>
+                            <span className="text-slate-600">{(item.dayLabel ?? item.day) ?? ''}</span>
                             <span className="font-medium text-slate-900">{item.uptime}%</span>
                           </div>
                           <div className="w-full bg-slate-200 rounded-full h-2">
