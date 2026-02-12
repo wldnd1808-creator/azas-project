@@ -51,8 +51,7 @@ export default function EfficiencyPage() {
     ],
   };
 
-  type EfficiencyItem = { time?: string; day?: string; dayLabel?: string; week?: string; efficiency: number; uptime: number; downtime?: number };
-  const currentData = efficiencyData[selectedPeriod] as EfficiencyItem[];
+  const currentData = efficiencyData[selectedPeriod];
   const avgEfficiency = currentData.reduce((sum, d) => sum + d.efficiency, 0) / currentData.length;
   const avgUptime = currentData.reduce((sum, d) => sum + d.uptime, 0) / currentData.length;
   const maxEfficiency = Math.max(...currentData.map(d => d.efficiency));
@@ -148,7 +147,8 @@ export default function EfficiencyPage() {
               <div className="h-80 p-4">
                 <div className="h-full flex items-end justify-between gap-2">
                   {currentData.map((item, index) => {
-                    const height = (item.efficiency / 100) * 100;
+                    const it = item as any;
+                    const height = (it.efficiency / 100) * 100;
                     return (
                       <div key={index} className="flex-1 flex flex-col items-center">
                         <div className="w-full flex flex-col items-center justify-end h-full">
@@ -157,12 +157,12 @@ export default function EfficiencyPage() {
                             style={{ height: `${height}%` }}
                           >
                             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                              {item.efficiency.toFixed(1)}%
+                              {it.efficiency.toFixed(1)}%
                             </div>
                           </div>
                         </div>
                         <div className="mt-2 text-xs text-slate-600">
-                          {(item.time ?? item.week ?? item.dayLabel ?? item.day) ?? ''}
+                          {(it.time ?? it.week ?? it.dayLabel ?? it.day) ?? ''}
                         </div>
                       </div>
                     );
@@ -220,25 +220,27 @@ export default function EfficiencyPage() {
                       {language === 'ko' ? '가동률 vs 다운타임' : 'Uptime vs Downtime'}
                     </h4>
                     <div className="space-y-2">
-                      {efficiencyData.week.map((item: EfficiencyItem, index) => (
+                      {efficiencyData.week.map((item, index) => {
+                        const it = item as any;
+                        return (
                         <div key={index} className="text-sm">
                           <div className="flex justify-between mb-1">
-                            <span className="text-slate-600">{(item.dayLabel ?? item.day) ?? ''}</span>
-                            <span className="font-medium text-slate-900">{item.uptime}%</span>
+                            <span className="text-slate-600">{(it.dayLabel ?? it.day) ?? ''}</span>
+                            <span className="font-medium text-slate-900">{it.uptime}%</span>
                           </div>
                           <div className="w-full bg-slate-200 rounded-full h-2">
                             <div
                               className="bg-green-500 h-2 rounded-full"
-                              style={{ width: `${item.uptime}%` }}
+                              style={{ width: `${it.uptime}%` }}
                             ></div>
                           </div>
-                          {item.downtime && (
+                          {it.downtime && (
                             <div className="text-xs text-slate-500 mt-1">
-                              {t('efficiency.downtime')}: {item.downtime}%
+                              {t('efficiency.downtime')}: {it.downtime}%
                             </div>
                           )}
                         </div>
-                      ))}
+                      );})}
                     </div>
                   </div>
                 )}
