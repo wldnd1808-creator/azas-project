@@ -144,7 +144,8 @@ export default function EnergyPage() {
               <div className="h-80 p-4">
                 <div className="h-full flex items-end justify-between gap-2">
                   {currentData.map((item, index) => {
-                    const height = (item.consumption / maxConsumption) * 100;
+                    const it = item as any;
+                    const height = (it.consumption / maxConsumption) * 100;
                     return (
                       <div key={index} className="flex-1 flex flex-col items-center">
                         <div className="w-full flex flex-col items-center justify-end h-full">
@@ -153,12 +154,12 @@ export default function EnergyPage() {
                             style={{ height: `${height}%` }}
                           >
                             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                              {item.consumption.toLocaleString()} kWh
+                              {it.consumption.toLocaleString()} kWh
                             </div>
                           </div>
                         </div>
                         <div className="mt-2 text-xs text-slate-600">
-                          {('time' in item ? item.time : 'week' in item ? item.week : ('dayLabel' in item ? item.dayLabel : item.day)) || item.week}
+                          {(it.time ?? it.week ?? it.dayLabel ?? it.day) ?? it.week}
                         </div>
                       </div>
                     );
@@ -206,22 +207,24 @@ export default function EnergyPage() {
                   <div className="pt-4 border-t border-slate-200">
                     <h4 className="text-sm font-medium text-slate-900 mb-2">{t('common.energyEfficiency')}</h4>
                     <div className="space-y-2">
-                      {energyData.week.map((item, index) => (
+                      {energyData.week.map((item, index) => {
+                        const it = item as any;
+                        return (
                         <div key={index} className="flex justify-between items-center text-sm">
-                          <span className="text-slate-600">{('dayLabel' in item ? item.dayLabel : item.day)}</span>
+                          <span className="text-slate-600">{(it.dayLabel ?? it.day) ?? ''}</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-slate-900">{item.efficiency}%</span>
+                            <span className="font-medium text-slate-900">{it.efficiency}%</span>
                             <div className="w-16 bg-slate-200 rounded-full h-1.5">
                               <div
                                 className={`h-1.5 rounded-full ${
-                                  item.efficiency >= 85 ? 'bg-green-500' : 'bg-yellow-500'
+                                  it.efficiency >= 85 ? 'bg-green-500' : 'bg-yellow-500'
                                 }`}
-                                style={{ width: `${item.efficiency}%` }}
+                                style={{ width: `${it.efficiency}%` }}
                               ></div>
                             </div>
                           </div>
                         </div>
-                      ))}
+                      );})}
                     </div>
                   </div>
                 )}
