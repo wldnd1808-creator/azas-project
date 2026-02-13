@@ -11,7 +11,9 @@ import {
   BarChart3,
   Grid3X3,
   AlertTriangle,
-  Settings 
+  Settings,
+  Activity,
+  LineChart
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -46,9 +48,19 @@ export default function Sidebar() {
       icon: BarChart3,
     },
     {
+      name: t('sidebar.prediction'),
+      href: '/prediction',
+      icon: LineChart,
+    },
+    {
       name: t('sidebar.energy'),
       href: '/energy',
       icon: Zap,
+    },
+    {
+      name: t('sidebar.energyVisualization'),
+      href: '/energy-visualization',
+      icon: Activity,
     },
     {
       name: t('sidebar.efficiency'),

@@ -31,7 +31,7 @@ const HUMIDITY_DEFECT_DATA = [
   { range: '55~60%', min: 55, max: 60, defectRate: 2.8, isDanger: false },
   { range: '60~65%', min: 60, max: 65, defectRate: 3.5, isDanger: false },
   { range: '65~70%', min: 65, max: 70, defectRate: 5.2, isDanger: false },
-  { range: '70~72%', min: 70, max: 72, defectRate: 7.1, isDanger: false },
+  { range: '70~72%', min: 70, max: 72, defectRate: 7.1, isDanger: true },
   { range: '72~75%', min: 72, max: 75, defectRate: 12.3, isDanger: true },
   { range: '75~80%', min: 75, max: 80, defectRate: 18.5, isDanger: true },
   { range: '80%+', min: 80, max: 100, defectRate: 24.2, isDanger: true },

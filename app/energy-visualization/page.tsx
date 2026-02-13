@@ -28,6 +28,16 @@ const TARIFF_BY_HOUR = [
 
 const CARBON_FACTOR = 0.00042;
 
+// 절감 예상 효과 카드 6개 (한글/영문)
+const SAVINGS_CARDS = [
+  { titleKo: '소성 10% 개선', titleEn: 'Firing 10% improvement', savings: 821, carbon: 0 },
+  { titleKo: '야간 전환', titleEn: 'Shift to night', savings: 650, carbon: 0 },
+  { titleKo: '전 공정 5% 효율화', titleEn: '5% efficiency (all process)', savings: 420, carbon: 0 },
+  { titleKo: '에너지 등급 C→A 개선', titleEn: 'Energy grade C→A', savings: 1100, carbon: 0 },
+  { titleKo: '혼합 공정 효율 개선', titleEn: 'Mixing process efficiency', savings: 380, carbon: 0 },
+  { titleKo: '분쇄 공정 최적화', titleEn: 'Grinding process optimization', savings: 290, carbon: 0 },
+];
+
 function getTariffForHour(h: number): number {
   let rate = 95;
   for (let i = TARIFF_BY_HOUR.length - 1; i >= 0; i--) {
@@ -47,13 +57,13 @@ function getTariffLabel(h: number): string {
   return '경부하';
 }
 
-interface HeatmapModalProps {
+interface HeatmapDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: { process: string; hour: number; cost: number; carbon: number; isHighCost: boolean } | null;
 }
 
-function HeatmapDetailModal({ isOpen, onClose, data }: HeatmapModalProps) {
+function HeatmapDetailModal({ isOpen, onClose, data }: HeatmapDetailModalProps) {
   if (!isOpen || !data) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -100,8 +110,8 @@ function HeatmapDetailModal({ isOpen, onClose, data }: HeatmapModalProps) {
   );
 }
 
-export default function ProcessModelPage() {
-  const { t, language } = useLanguage();
+export default function EnergyVisualizationPage() {
+  const { language } = useLanguage();
   const [modalData, setModalData] = useState<HeatmapDetailModalProps['data']>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [simulationActive, setSimulationActive] = useState(false);
@@ -150,76 +160,102 @@ export default function ProcessModelPage() {
       <Navbar />
       <RightSidebar />
 
-      <main className="ml-64 mr-80 mt-16 bg-slate-100 min-h-[calc(100vh-4rem)] p-6 min-w-0">
-        <div className="max-w-full mx-auto min-h-[400px]">
+      <main className="ml-64 mr-80 mt-16 bg-slate-100 min-h-[calc(100vh-4rem)] p-6">
+        <div className="max-w-full mx-auto">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-slate-900">
-              {language === 'ko' ? '공정 모델' : 'Process Model'}
+              {language === 'ko' ? '에너지 시각 분석' : 'Energy Visual Analysis'}
             </h2>
             <p className="text-slate-600 mt-1">
               {language === 'ko'
-                ? '시간대별 공정 비용 분석 · 클릭하면 상세 정보 확인'
-                : 'Time-based process cost analysis · Click for details'}
+                ? '시간대별 공정 비용 · 절감 효과 · What-If 시뮬레이션'
+                : 'Process cost by time · Savings effect · What-If simulation'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-            <Card
-              title={language === 'ko' ? '시간대별 공정 비용 히트맵' : 'Time-based Process Cost Heatmap'}
-              className="mb-6 lg:mb-0"
-            >
-              <p className="text-sm text-slate-600 mb-4">
-                {language === 'ko'
-                  ? '시간대 × 공정별 예상 전력 비용 (원/kWh 반영) · 셀을 클릭하면 상세 분석'
-                  : 'Hour × Process expected power cost (reflects ₩/kWh) · Click cell for details'}
-              </p>
-              <div className="overflow-x-auto">
-                <div className="grid grid-cols-[80px_1fr] grid-rows-[auto_1fr_auto] gap-2 min-w-[560px]">
-                  <div className="col-start-1 row-start-2 flex flex-col gap-1 pt-3 text-xs text-slate-600">
-                    {PROCESS_DATA.map((p) => (
-                      <span key={p.process} className="whitespace-nowrap leading-8">
-                        {p.process}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="col-start-2 row-start-2 flex flex-col gap-1">
-                    {costData.map((row, pi) => (
-                      <div key={pi} className="grid gap-0.5 min-h-6" style={{ gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
-                        {row.map((cost, hi) => {
-                          const pct = globalMax > 0 ? (cost / globalMax) * 100 : 0;
-                          const opacity = 0.2 + (pct / 100) * 0.6;
-                          return (
-                            <button
-                              key={hi}
-                              type="button"
-                              onClick={() => handleCellClick(pi, hi)}
-                              className="min-h-[20px] rounded border border-slate-200 hover:scale-105 hover:shadow-md hover:shadow-blue-200/50 transition-all cursor-pointer"
-                              style={{
-                                background: `rgba(59, 130, 246, ${opacity})`,
-                              }}
-                              title={`약 ${Math.round(cost).toLocaleString()}원 · ${language === 'ko' ? '클릭하면 상세 분석' : 'Click for details'}`}
-                            />
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="col-start-2 row-start-3 grid gap-0.5 text-[10px] text-slate-500 mt-1" style={{ gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
-                    {Array.from({ length: 24 }, (_, h) => (
-                      <span key={h} className="text-center">
-                        {h % 6 === 0 ? `${h}시` : ''}
-                      </span>
-                    ))}
+            <div>
+              {/* 히트맵: 에너지 사용 현황 */}
+              <Card
+                title={language === 'ko' ? '에너지 사용 현황 · 시간대별 공정 비용' : 'Energy usage · Process cost by time'}
+                className="mb-6"
+              >
+                <p className="text-sm text-slate-600 mb-4">
+                  {language === 'ko'
+                    ? '시간대 × 공정별 예상 전력 비용 (원/kWh) · 셀 클릭 시 상세'
+                    : 'Hour × Process power cost · Click cell for details'}
+                </p>
+                <div className="overflow-x-auto">
+                  <div className="grid grid-cols-[80px_1fr] grid-rows-[auto_1fr_auto] gap-2 min-w-[560px]">
+                    <div className="col-start-1 row-start-2 flex flex-col gap-1 pt-3 text-xs text-slate-600">
+                      {PROCESS_DATA.map((p) => (
+                        <span key={p.process} className="whitespace-nowrap leading-8">
+                          {p.process}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="col-start-2 row-start-2 flex flex-col gap-1">
+                      {costData.map((row, pi) => (
+                        <div key={pi} className="grid gap-0.5 min-h-6" style={{ gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
+                          {row.map((cost, hi) => {
+                            const pct = globalMax > 0 ? (cost / globalMax) * 100 : 0;
+                            const opacity = 0.2 + (pct / 100) * 0.6;
+                            return (
+                              <button
+                                key={hi}
+                                type="button"
+                                onClick={() => handleCellClick(pi, hi)}
+                                className="min-h-[20px] rounded border border-slate-200 hover:scale-105 hover:shadow-md hover:shadow-blue-200/50 transition-all cursor-pointer"
+                                style={{
+                                  background: `rgba(59, 130, 246, ${opacity})`,
+                                }}
+                                title={`약 ${Math.round(cost).toLocaleString()}원`}
+                              />
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="col-start-2 row-start-3 grid gap-0.5 text-[10px] text-slate-500 mt-1" style={{ gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
+                      {Array.from({ length: 24 }, (_, h) => (
+                        <span key={h} className="text-center">
+                          {h % 6 === 0 ? `${h}시` : ''}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 mt-4 text-xs text-slate-600">
-                <span>{language === 'ko' ? '저비용' : 'Low cost'}</span>
-                <div className="w-24 h-2 rounded bg-gradient-to-r from-slate-200 to-blue-500" />
-                <span>{language === 'ko' ? '고비용' : 'High cost'}</span>
-              </div>
-            </Card>
+                <div className="flex items-center gap-3 mt-4 text-xs text-slate-600">
+                  <span>{language === 'ko' ? '저비용' : 'Low cost'}</span>
+                  <div className="w-24 h-2 rounded bg-gradient-to-r from-slate-200 to-blue-500" />
+                  <span>{language === 'ko' ? '고비용' : 'High cost'}</span>
+                </div>
+              </Card>
 
+              {/* 절감 예상 효과 카드 6개 */}
+              <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                {language === 'ko' ? '절감 예상 효과' : 'Expected Savings Effect'}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {SAVINGS_CARDS.map((card, i) => (
+                  <Card key={i} className="border-l-4 border-emerald-500">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-slate-900">
+                        {language === 'ko' ? card.titleKo : card.titleEn}
+                      </p>
+                      <p className="text-lg font-bold text-emerald-600">
+                        {language === 'ko' ? '연간 약 ' : '~ '}{card.savings.toLocaleString()}{language === 'ko' ? '만원 절감' : ' KRW/yr'}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {language === 'ko' ? '탄소 ' : 'Carbon '}{card.carbon} tCO₂e {language === 'ko' ? '감축' : 'reduction'}
+                      </p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* What-If 시뮬레이션 (우측) */}
             <div className="lg:min-h-[480px] lg:sticky lg:top-24">
               <WhatIfSimulationPanel onSimulationActiveChange={setSimulationActive} />
             </div>

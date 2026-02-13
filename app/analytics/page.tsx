@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import RightSidebar from '@/components/RightSidebar';
 import Card from '@/components/Card';
+import WhatIfSimulationPanel from '@/components/WhatIfSimulationPanel';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const HUMIDITY_THRESHOLD = 72;
@@ -35,6 +36,7 @@ export default function AnalyticsPage() {
   );
   const [isSimulating, setIsSimulating] = useState(false);
   const [approvalSent, setApprovalSent] = useState(false);
+  const [simulationActive, setSimulationActive] = useState(false);
 
   const sensorsOverThreshold = sensors.filter(
     (s) => s.humidity >= HUMIDITY_THRESHOLD
@@ -121,7 +123,13 @@ export default function AnalyticsPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className={`min-h-screen bg-slate-50 transition-all duration-500 ${
+        simulationActive
+          ? 'relative ring-2 ring-cyan-400/40 shadow-[0_0_0_1px_rgba(34,211,238,0.3),0_0_40px_rgba(34,211,238,0.12),0_0_80px_rgba(34,211,238,0.06)]'
+          : ''
+      }`}
+    >
       <Sidebar />
       <Navbar />
       <RightSidebar />
@@ -191,6 +199,8 @@ export default function AnalyticsPage() {
             </p>
           </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+            <div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <Card title={language === 'ko' ? '현재 습도' : 'Current Humidity'}>
               <div className="space-y-2">
@@ -311,6 +321,12 @@ export default function AnalyticsPage() {
               </table>
             </div>
           </Card>
+            </div>
+
+            <div className="lg:min-h-[480px] lg:sticky lg:top-24">
+              <WhatIfSimulationPanel onSimulationActiveChange={setSimulationActive} />
+            </div>
+          </div>
         </div>
       </main>
     </div>
