@@ -1,423 +1,332 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-  Cell,
-} from 'recharts';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
+import RightSidebar from '@/components/RightSidebar';
 import Card from '@/components/Card';
+import WhatIfSimulationPanel from '@/components/WhatIfSimulationPanel';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { authHeader, dashboardApiUrl } from '@/lib/api-client';
 
-/** 구간별 불량률 막대 1개용 데이터 타입 */
-type IntervalDefectPoint = { interval: string; defectRate: number; fullLabel: string };
+const HUMIDITY_THRESHOLD = 72;
 
-/** 주요 변수 구간별 불량률 Mock 데이터 (metal_impurity, humidity, lithium_input) */
-const MOCK_INTERVAL_DEFECT: Record<string, { data: IntervalDefectPoint[]; average: number }> = {
-  metal_impurity: {
-    average: 0.082,
-    data: [
-      { interval: '0.008~0.014', fullLabel: '0.0080 - 0.0140 (ppm)', defectRate: 0.072 },
-      { interval: '0.014~0.020', fullLabel: '0.0140 - 0.0200 (ppm)', defectRate: 0.065 },
-      { interval: '0.020~0.026', fullLabel: '0.0200 - 0.0260 (ppm)', defectRate: 0.088 },
-      { interval: '0.026~0.032', fullLabel: '0.0260 - 0.0320 (ppm)', defectRate: 0.091 },
-      { interval: '0.032~0.045', fullLabel: '0.0320 - 0.0450 (ppm)', defectRate: 0.112 },
-    ],
-  },
-  humidity: {
-    average: 0.078,
-    data: [
-      { interval: '32~42', fullLabel: '32.0 - 42.0 (%)', defectRate: 0.055 },
-      { interval: '42~52', fullLabel: '42.0 - 52.0 (%)', defectRate: 0.068 },
-      { interval: '52~62', fullLabel: '52.0 - 62.0 (%)', defectRate: 0.082 },
-      { interval: '62~72', fullLabel: '62.0 - 72.0 (%)', defectRate: 0.095 },
-      { interval: '72~85', fullLabel: '72.0 - 85.0 (%)', defectRate: 0.108 },
-    ],
-  },
-  lithium_input: {
-    average: 0.081,
-    data: [
-      { interval: '0.94~0.98', fullLabel: '0.94 - 0.98 (mol ratio)', defectRate: 0.098 },
-      { interval: '0.98~1.02', fullLabel: '0.98 - 1.02 (mol ratio)', defectRate: 0.058 },
-      { interval: '1.02~1.06', fullLabel: '1.02 - 1.06 (mol ratio)', defectRate: 0.067 },
-      { interval: '1.06~1.10', fullLabel: '1.06 - 1.10 (mol ratio)', defectRate: 0.089 },
-      { interval: '1.10~1.15', fullLabel: '1.10 - 1.15 (mol ratio)', defectRate: 0.112 },
-    ],
-  },
-};
+type Sensor = { id: string; name: string; humidity: number; temperature: number };
 
-/** 차트 표시 순서: metal_impurity → humidity → lithium_input */
-const INTERVAL_DEFECT_ORDER: (keyof typeof MOCK_INTERVAL_DEFECT)[] = ['metal_impurity', 'humidity', 'lithium_input'];
+const initialSensors: Sensor[] = [
+  { id: 'A1', name: 'Zone A-1', humidity: 68, temperature: 23.2 },
+  { id: 'A2', name: 'Zone A-2', humidity: 75, temperature: 24.1 },
+  { id: 'B1', name: 'Zone B-1', humidity: 71, temperature: 24.8 },
+  { id: 'B2', name: 'Zone B-2', humidity: 73, temperature: 25.0 },
+];
 
-/** 불량률에 따른 붉은 계열 색 (높을수록 진함) */
-function getBarColor(rate: number, maxRate: number): string {
-  if (maxRate <= 0) return '#fca5a5';
-  const t = Math.min(1, rate / maxRate);
-  if (t < 0.33) return '#fca5a5';
-  if (t < 0.66) return '#ef4444';
-  return '#b91c1c';
-}
-
-/** 단일 변수 구간별 불량률 막대 차트 (Recharts) */
-function IntervalDefectBarChart({
-  variable,
-  data,
-  average,
-  language,
-}: {
-  variable: string;
-  data: IntervalDefectPoint[];
-  average: number;
-  language: string;
-}) {
-  const maxRate = Math.max(...data.map((d) => d.defectRate), average, 0.01);
-  return (
-    <div className="h-[260px] w-full">
-      <h4 className="text-sm font-semibold text-slate-800 mb-2">
-        [{variable}] {language === 'ko' ? '구간별 불량률' : 'Defect Rate by Section'}
-      </h4>
-      <ResponsiveContainer width="100%" height="90%">
-        <BarChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 24 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis
-            dataKey="interval"
-            angle={0}
-            textAnchor="middle"
-            tick={{
-              fontSize: 10,
-              fill: '#333333',
-              dy: 8,
-            }}
-            height={48}
-            interval={0}
-            minTickGap={20}
-            tickFormatter={(value: string) =>
-              value
-                .split('~')
-                .map((s) => {
-                  const n = parseFloat(s.trim());
-                  if (Number.isNaN(n)) return s;
-                  return Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2);
-                })
-                .join('~')
-            }
-          />
-          <YAxis
-            tick={{ fontSize: 10, fill: '#64748b' }}
-            tickFormatter={(v) => (v * 100).toFixed(1) + '%'}
-            domain={[0, Math.ceil(maxRate * 20) / 20]}
-            label={
-              language === 'ko'
-                ? { value: '불량률', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }
-                : { value: 'Defect Rate', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }
-            }
-          />
-          <Tooltip
-            formatter={(value: number) => [(value * 100).toFixed(2) + '%', language === 'ko' ? '불량률' : 'Defect Rate']}
-            labelFormatter={(_, payload) => payload?.[0]?.payload?.fullLabel ?? ''}
-          />
-          <ReferenceLine
-            y={average}
-            stroke="#2563eb"
-            strokeDasharray="5 5"
-            strokeWidth={2}
-            label={{
-              value: language === 'ko' ? '평균' : 'Average',
-              position: 'right',
-              fill: '#2563eb',
-              fontSize: 11,
-            }}
-          />
-          <Bar dataKey="defectRate" radius={[4, 4, 0, 0]} maxBarSize={48}>
-            {data.map((entry, index) => (
-              <Cell key={index} fill={getBarColor(entry.defectRate, maxRate)} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-type AnalyticsData = {
-  importance: { name: string; importance: number }[];
-  defectLots?: { lot: string; defectRate: number; variables: Record<string, number> }[];
-  defectTrend?: { time: string; defectRate: number; passRate: number }[];
-  targetColumn?: string;
-  error?: string;
-};
+// 차트용 초기 습도 이력 (마지막 값이 현재 습도)
+const buildInitialChartData = (current: number) =>
+  [70, 71, 72, 73, 74, 74, 75, 75, 75, current];
 
 export default function AnalyticsPage() {
-  const { t, language } = useLanguage();
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { language } = useLanguage();
+  const [showHumidityPopup, setShowHumidityPopup] = useState(false);
+  const [humidityChecked, setHumidityChecked] = useState(false);
+  const [currentHumidity, setCurrentHumidity] = useState(75);
+  const [sensors, setSensors] = useState<Sensor[]>(() =>
+    initialSensors.map((s) => ({ ...s }))
+  );
+  const [chartData, setChartData] = useState<number[]>(() =>
+    buildInitialChartData(75)
+  );
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [approvalSent, setApprovalSent] = useState(false);
+  const [simulationActive, setSimulationActive] = useState(false);
 
+  const sensorsOverThreshold = sensors.filter(
+    (s) => s.humidity >= HUMIDITY_THRESHOLD
+  );
+  const isOverThreshold =
+    currentHumidity >= HUMIDITY_THRESHOLD || sensorsOverThreshold.length > 0;
+
+  // 습도가 72% 이상일 때 팝업 표시 (한 번만)
   useEffect(() => {
-    fetch(dashboardApiUrl('/api/dashboard/analytics'), { headers: authHeader() })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json?.success) setData(json);
-        else setError(json?.error || 'Failed to load');
-      })
-      .catch((err) => setError(String(err?.message || err)))
-      .finally(() => setLoading(false));
-  }, []);
+    if (humidityChecked) return;
+    if (currentHumidity >= HUMIDITY_THRESHOLD || sensorsOverThreshold.length > 0) {
+      setShowHumidityPopup(true);
+    }
+    setHumidityChecked(true);
+  }, [humidityChecked, currentHumidity, sensorsOverThreshold.length]);
+
+  const handleCloseHumidityPopup = () => {
+    setShowHumidityPopup(false);
+  };
+
+  // 설비 제어 승인: 텔레그램 알림 + 습도 72% 아래로 떨어지는 시뮬레이션
+  const handleEquipmentApprove = useCallback(async () => {
+    if (approvalSent || isSimulating) return;
+    setApprovalSent(true);
+    setIsSimulating(true);
+
+    const startHumidity = currentHumidity;
+    const targetHumidity = 65;
+    const message =
+      language === 'ko'
+        ? `🔔 [분석 페이지] 설비 제어 승인됨\n\n습도: ${startHumidity}% → ${targetHumidity}%(목표) 제습/환기 조치 진행\n시각: ${new Date().toLocaleString('ko-KR')}`
+        : `🔔 [Analytics] Equipment control approved\n\nHumidity: ${startHumidity}% → ${targetHumidity}% (target). Dehumidification in progress.\nTime: ${new Date().toISOString()}`;
+
+    try {
+      await fetch('/api/telegram-alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
+    } catch (_) {}
+
+    setShowHumidityPopup(false);
+
+    // 습도 값이 72% 아래로 떨어지는 시뮬레이션 (차트 + 현재값 + 센서)
+    const steps = 10;
+    const stepMs = 150;
+
+    for (let i = 1; i <= steps; i++) {
+      await new Promise((r) => setTimeout(r, stepMs));
+      const t = i / steps;
+      const nextHumidity = Math.round(
+        startHumidity - (startHumidity - targetHumidity) * t
+      );
+      const clamped = Math.min(nextHumidity, targetHumidity);
+
+      setCurrentHumidity(clamped);
+      setChartData((prev) => [...prev.slice(-9), clamped]);
+
+      setSensors((prev) =>
+        prev.map((s) => ({
+          ...s,
+          humidity:
+            s.humidity >= HUMIDITY_THRESHOLD
+              ? Math.min(s.humidity, Math.round(s.humidity - (s.humidity - targetHumidity) * t))
+              : s.humidity,
+        }))
+      );
+    }
+
+    setCurrentHumidity(targetHumidity);
+    setSensors((prev) =>
+      prev.map((s) => ({
+        ...s,
+        humidity: s.humidity >= HUMIDITY_THRESHOLD ? targetHumidity : s.humidity,
+      }))
+    );
+    setChartData((prev) => [...prev.slice(-9), targetHumidity]);
+    setIsSimulating(false);
+  }, [
+    currentHumidity,
+    language,
+    approvalSent,
+    isSimulating,
+  ]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className={`min-h-screen bg-slate-50 transition-all duration-500 ${
+        simulationActive
+          ? 'relative ring-2 ring-cyan-400/40 shadow-[0_0_0_1px_rgba(34,211,238,0.3),0_0_40px_rgba(34,211,238,0.12),0_0_80px_rgba(34,211,238,0.06)]'
+          : ''
+      }`}
+    >
       <Sidebar />
       <Navbar />
+      <RightSidebar />
+
+      {/* 습도 72% 이상 경고 팝업 */}
+      {showHumidityPopup && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="humidity-popup-title"
+        >
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 border border-amber-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                <span className="text-amber-600 text-xl">⚠</span>
+              </div>
+              <h2
+                id="humidity-popup-title"
+                className="text-lg font-bold text-slate-900"
+              >
+                {language === 'ko' ? '습도 경고' : 'Humidity Alert'}
+              </h2>
+            </div>
+            <p className="text-slate-600 mb-4">
+              {language === 'ko'
+                ? `현재 습도가 ${HUMIDITY_THRESHOLD}% 이상입니다. (현재: ${currentHumidity}%) 공정 품질에 영향을 줄 수 있으니 환기 또는 제습을 권장합니다.`
+                : `Current humidity is at or above ${HUMIDITY_THRESHOLD}%. (Current: ${currentHumidity}%) Ventilation or dehumidification is recommended.`}
+            </p>
+            {sensorsOverThreshold.length > 0 && (
+              <p className="text-sm text-slate-500 mb-4">
+                {language === 'ko' ? '기준 초과 구역: ' : 'Zones over threshold: '}
+                {sensorsOverThreshold.map((s) => s.name).join(', ')}
+              </p>
+            )}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleCloseHumidityPopup}
+                className="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg font-medium hover:bg-slate-300"
+              >
+                {language === 'ko' ? '확인' : 'OK'}
+              </button>
+              <button
+                type="button"
+                onClick={handleEquipmentApprove}
+                disabled={isSimulating}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {language === 'ko' ? '설비 제어 승인' : 'Approve equipment control'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="ml-64 mr-80 mt-16 bg-slate-100 min-h-[calc(100vh-4rem)] p-6">
         <div className="max-w-full mx-auto">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">{t('analytics.defectAnalysis')}</h2>
-            <p className="text-slate-600 mt-1">{t('analytics.defectSubtitle')}</p>
+            <h2 className="text-2xl font-bold text-slate-900">
+              {language === 'ko' ? '분석' : 'Analytics'}
+            </h2>
+            <p className="text-slate-600 mt-1">
+              {language === 'ko'
+                ? '환경·센서 데이터 분석 및 모니터링'
+                : 'Environment and sensor data analysis'}
+            </p>
           </div>
 
-          {loading && (
-            <div className="flex items-center justify-center py-12 text-slate-500">
-              {t('analytics.noData').replace('표시할 데이터가 없습니다.', '로딩 중...')}
-            </div>
-          )}
-          {error && (
-            <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
-              {error}
-            </div>
-          )}
-          {!loading && data && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card title={t('analytics.defectFactors')} className="lg:col-span-2">
-                {data.importance.length === 0 ? (
-                  <p className="text-slate-500 text-sm py-4">{t('analytics.noData')}</p>
-                ) : (
-                  <>
-                    <p className="text-sm text-slate-600 mb-4">
-                      {t('analytics.defectFactorsDesc')}
-                      {data.targetColumn && (
-                        <span className="font-mono text-xs ml-2 px-2 py-1 bg-slate-100 rounded">
-                          {t('analytics.target')}: {data.targetColumn}
-                        </span>
-                      )}
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {data.importance.slice(0, 10).map((item, idx) => (
-                        <div key={item.name} className="flex items-center gap-3">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700">
-                            {idx + 1}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between text-sm mb-1">
-                              <span className="font-medium text-slate-800 truncate" title={item.name}>
-                                {item.name}
-                              </span>
-                              <span className="text-slate-600 ml-2">{(item.importance * 100).toFixed(1)}%</span>
-                            </div>
-                            <div className="w-full bg-slate-200 rounded-full h-2">
-                              <div
-                                className="bg-indigo-500 h-2 rounded-full transition-all"
-                                style={{ width: `${Math.min(100, item.importance * 100)}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </Card>
-
-              {/* 주요 변수 구간별 불량률 분석 (Mock) */}
-              <Card
-                title={language === 'ko' ? '주요 변수 구간별 불량률 분석' : 'Defect Rate by Interval (Key Variables)'}
-                className="lg:col-span-2"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {INTERVAL_DEFECT_ORDER.map((variable) => {
-                    const { data, average } = MOCK_INTERVAL_DEFECT[variable];
-                    return (
-                    <div key={variable} className="bg-slate-50/50 rounded-lg p-4 border border-slate-200">
-                      <IntervalDefectBarChart
-                        variable={variable}
-                        data={data}
-                        average={average}
-                        language={language}
-                      />
-                    </div>
-                    );
-                  })}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+            <div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <Card title={language === 'ko' ? '현재 습도' : 'Current Humidity'}>
+              <div className="space-y-2">
+                <div
+                  className={`text-3xl font-bold ${
+                    isOverThreshold ? 'text-amber-600' : 'text-slate-900'
+                  }`}
+                >
+                  {currentHumidity}%
                 </div>
-                <p className="text-slate-500 text-xs mt-3">
-                  {language === 'ko'
-                    ? '※ 현재 Mock 데이터로 표시 중입니다. 백엔드 API 연동 시 실제 데이터로 대체됩니다.'
-                    : '※ Displaying mock data. Will be replaced with real data when API is connected.'}
-                </p>
-              </Card>
+                <div className="text-sm text-slate-600">
+                  {language === 'ko' ? '권장 기준: 72% 미만' : 'Recommended: below 72%'}
+                </div>
+                {isOverThreshold && (
+                  <div className="text-xs text-amber-700 font-medium">
+                    {language === 'ko' ? '기준 초과' : 'Above threshold'}
+                  </div>
+                )}
+                {isSimulating && (
+                  <div className="text-xs text-emerald-600 font-medium">
+                    {language === 'ko' ? '제습 시뮬레이션 중…' : 'Simulating…'}
+                  </div>
+                )}
+              </div>
+            </Card>
+            <Card title={language === 'ko' ? '현재 온도' : 'Current Temperature'}>
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-slate-900">24.5°C</div>
+                <div className="text-sm text-slate-600">
+                  {language === 'ko' ? '공정 실내' : 'Process room'}
+                </div>
+              </div>
+            </Card>
+            <Card title={language === 'ko' ? '습도 기준 초과 구역' : 'Zones Over Humidity Limit'}>
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-slate-900">
+                  {sensorsOverThreshold.length}
+                </div>
+                <div className="text-sm text-slate-600">
+                  {language === 'ko' ? '구역 (72% 이상)' : 'zones (≥72%)'}
+                </div>
+              </div>
+            </Card>
+          </div>
 
-              {data.defectTrend && data.defectTrend.length > 0 && (
-                <Card title={language === 'ko' ? '불량률 추이 (최근 7일)' : 'Defect Rate Trend (Last 7 Days)'} className="lg:col-span-2">
-                  <p className="text-sm text-slate-600 mb-4">
-                    {language === 'ko' ? '시간대별 불량률 변화 추이' : 'Hourly defect rate trend'}
-                  </p>
-                  <div className="h-64 relative">
-                    <svg className="w-full h-full" viewBox="0 0 1000 300">
-                      <defs>
-                        <linearGradient id="defectGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" />
-                          <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
-                        </linearGradient>
-                        <linearGradient id="passGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
-                          <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-                      {/* 그리드 라인 */}
-                      {[0, 25, 50, 75, 100].map((y) => (
-                        <g key={y}>
-                          <line
-                            x1="60"
-                            y1={250 - (y / 100) * 200}
-                            x2="950"
-                            y2={250 - (y / 100) * 200}
-                            stroke="#e2e8f0"
-                            strokeWidth="1"
-                          />
-                          <text
-                            x="45"
-                            y={255 - (y / 100) * 200}
-                            fontSize="10"
-                            fill="#64748b"
-                            textAnchor="end"
-                          >
-                            {y}%
-                          </text>
-                        </g>
-                      ))}
-                      {/* 불량률 차트 */}
-                      {(() => {
-                        const points = data.defectTrend!.map((d, i) => {
-                          const x = 60 + (i / (data.defectTrend!.length - 1)) * 890;
-                          const y = 250 - (d.defectRate / 100) * 200;
-                          return `${x},${y}`;
-                        }).join(' ');
-                        const areaPoints = `60,250 ${points} ${60 + 890},250`;
-                        return (
-                          <>
-                            <polyline
-                              points={areaPoints}
-                              fill="url(#defectGradient)"
-                              stroke="none"
-                            />
-                            <polyline
-                              points={points}
-                              fill="none"
-                              stroke="#ef4444"
-                              strokeWidth="2"
-                            />
-                            {data.defectTrend!.map((d, i) => {
-                              const x = 60 + (i / (data.defectTrend!.length - 1)) * 890;
-                              const y = 250 - (d.defectRate / 100) * 200;
-                              return (
-                                <circle
-                                  key={i}
-                                  cx={x}
-                                  cy={y}
-                                  r="3"
-                                  fill="#ef4444"
-                                >
-                                  <title>{d.time}: {d.defectRate.toFixed(2)}%</title>
-                                </circle>
-                              );
-                            })}
-                          </>
-                        );
-                      })()}
-                      {/* X축 레이블 (시간) */}
-                      {data.defectTrend.filter((_, i) => i % Math.ceil(data.defectTrend!.length / 10) === 0).map((d, i, arr) => {
-                        const originalIndex = data.defectTrend!.findIndex((item) => item.time === d.time);
-                        const x = 60 + (originalIndex / (data.defectTrend!.length - 1)) * 890;
-                        const timeLabel = new Date(d.time).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-                        return (
-                          <text
-                            key={i}
-                            x={x}
-                            y="270"
-                            fontSize="9"
-                            fill="#64748b"
-                            textAnchor="middle"
-                          >
-                            {timeLabel}
-                          </text>
-                        );
-                      })}
-                    </svg>
-                  </div>
-                  <div className="flex items-center justify-center gap-6 mt-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-red-500 rounded" />
-                      <span className="text-slate-600">{language === 'ko' ? '불량률' : 'Defect Rate'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-500">
-                        {language === 'ko' ? '평균' : 'Avg'}: {(data.defectTrend.reduce((sum, d) => sum + d.defectRate, 0) / data.defectTrend.length).toFixed(2)}%
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-              )}
-
-              {data.defectLots && data.defectLots.length > 0 && (
-                <Card title={t('analytics.recentDefectLots')} className="lg:col-span-2">
-                  <p className="text-sm text-slate-600 mb-4">{t('analytics.recentDefectLotsDesc')}</p>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-200">
-                          <th className="text-left py-2 px-3 font-medium text-slate-700">LOT</th>
-                          <th className="text-left py-2 px-3 font-medium text-slate-700">{t('analytics.defectRate')}</th>
-                          <th className="text-left py-2 px-3 font-medium text-slate-700">{t('analytics.topFactors')}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.defectLots.slice(0, 8).map((lot, idx) => {
-                          const topVars = Object.entries(lot.variables)
-                            .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
-                            .slice(0, 3);
-                          return (
-                            <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
-                              <td className="py-2 px-3 font-mono text-xs">{lot.lot}</td>
-                              <td className="py-2 px-3">
-                                <span className="px-2 py-1 rounded bg-red-100 text-red-700 font-medium">
-                                  {lot.defectRate.toFixed(1)}%
-                                </span>
-                              </td>
-                              <td className="py-2 px-3 text-xs text-slate-600">
-                                {topVars.map(([name, val]) => (
-                                  <span key={name} className="inline-block mr-2 mb-1 px-2 py-0.5 bg-slate-100 rounded">
-                                    {name}: {Number(val).toFixed(2)}
-                                  </span>
-                                ))}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </Card>
-              )}
+          {/* 습도 추이 차트 (72% 아래로 떨어지는 시뮬레이션 반영) */}
+          <Card
+            title={language === 'ko' ? '습도 추이' : 'Humidity trend'}
+            className="mb-6"
+          >
+            <div className="h-48 p-4 flex items-end justify-between gap-1">
+              {chartData.map((value, index) => (
+                <div
+                  key={index}
+                  className="flex-1 flex flex-col items-center min-w-0"
+                >
+                  <div
+                    className={`w-full rounded-t transition-all duration-150 ${
+                      value >= HUMIDITY_THRESHOLD
+                        ? 'bg-amber-500'
+                        : 'bg-slate-400'
+                    }`}
+                    style={{
+                      height: `${Math.min(100, (value / 100) * 100)}%`,
+                      minHeight: '4px',
+                    }}
+                  />
+                  <span className="text-[10px] text-slate-500 mt-1 truncate w-full text-center">
+                    {value}%
+                  </span>
+                </div>
+              ))}
             </div>
-          )}
+            <p className="text-xs text-slate-500 px-4 pb-2">
+              {language === 'ko'
+                ? '최근 습도 값 (설비 제어 승인 시 72% 이하로 시뮬레이션)'
+                : 'Recent humidity (simulation drops below 72% on approval)'}
+            </p>
+          </Card>
+
+          <Card title={language === 'ko' ? '구역별 센서 현황' : 'Sensor Status by Zone'}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-600 text-left">
+                    <th className="py-3 px-4">{language === 'ko' ? '구역' : 'Zone'}</th>
+                    <th className="py-3 px-4">{language === 'ko' ? '습도(%)' : 'Humidity(%)'}</th>
+                    <th className="py-3 px-4">{language === 'ko' ? '온도(°C)' : 'Temp(°C)'}</th>
+                    <th className="py-3 px-4">{language === 'ko' ? '상태' : 'Status'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sensors.map((sensor) => (
+                    <tr key={sensor.id} className="border-b border-slate-100">
+                      <td className="py-3 px-4 font-medium text-slate-900">{sensor.name}</td>
+                      <td className="py-3 px-4">{sensor.humidity}%</td>
+                      <td className="py-3 px-4">{sensor.temperature}°C</td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={
+                            sensor.humidity >= HUMIDITY_THRESHOLD
+                              ? 'text-amber-700 font-medium'
+                              : 'text-slate-600'
+                          }
+                        >
+                          {sensor.humidity >= HUMIDITY_THRESHOLD
+                            ? language === 'ko'
+                              ? '기준 초과'
+                              : 'Over limit'
+                            : language === 'ko'
+                              ? '정상'
+                              : 'Normal'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+            </div>
+
+            <div className="lg:min-h-[480px] lg:sticky lg:top-24">
+              <WhatIfSimulationPanel onSimulationActiveChange={setSimulationActive} />
+            </div>
+          </div>
         </div>
       </main>
     </div>

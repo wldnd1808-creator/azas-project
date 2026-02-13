@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { UserPlus, KeyRound, Mail, Phone } from 'lucide-react';
-import { apiUrl, authApiUrl } from '@/lib/api-client';
 
 type ModalMode = 'login' | 'signup' | 'findPassword';
 
@@ -35,7 +34,7 @@ export default function LoginPage() {
   // 이미 로그인되어 있으면 대시보드로 리다이렉트
   useEffect(() => {
     if (!isLoading && user) {
-      router.push('/process-model');
+      router.push('/');
     }
   }, [user, isLoading, router]);
 
@@ -59,19 +58,13 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    const trimmed = employeeNumber.trim();
-    if (!/^\d{8}$/.test(trimmed)) {
-      setError(language === 'ko' ? '사원번호는 8자리 숫자여야 합니다.' : 'Employee number must be 8 digits.');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const result = await login(trimmed, password);
+      const result = await login(employeeNumber, password);
       if (result.success) {
-        router.push('/process-model');
+        // 로그인 성공 시 AuthContext에서 리다이렉트 처리
+        router.push('/');
       } else {
         setError(result.error || '사원번호 또는 비밀번호가 올바르지 않습니다.');
       }
@@ -98,26 +91,20 @@ export default function LoginPage() {
 
     setIsSigningUp(true);
 
-    const signupTrimmed = signupEmployeeNumber.trim();
-    if (!signupTrimmed) {
+    if (!signupEmployeeNumber.trim()) {
       setError(language === 'ko' ? '사원번호를 입력해주세요.' : 'Please enter employee number.');
-      setIsSigningUp(false);
-      return;
-    }
-    if (!/^\d{8}$/.test(signupTrimmed)) {
-      setError(language === 'ko' ? '사원번호는 8자리 숫자여야 합니다.' : 'Employee number must be 8 digits.');
       setIsSigningUp(false);
       return;
     }
 
     try {
-      const response = await fetch(authApiUrl('/api/auth/signup'), {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          employeeNumber: signupTrimmed,
+          employeeNumber: signupEmployeeNumber.trim(),
           password: signupPassword
         }),
       });
@@ -128,7 +115,7 @@ export default function LoginPage() {
         // 회원가입 성공 - 자동 로그인
         const loginResult = await login(signupEmployeeNumber.trim(), signupPassword);
         if (loginResult.success) {
-          router.push('/process-model');
+          router.push('/');
         } else {
           setError(language === 'ko' 
             ? '회원가입은 완료되었지만 자동 로그인에 실패했습니다. 로그인 페이지에서 로그인해주세요.'
@@ -192,14 +179,11 @@ export default function LoginPage() {
                   <input
                     id="employeeNumber"
                     type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]{8}"
-                    maxLength={8}
                     value={employeeNumber}
-                    onChange={(e) => setEmployeeNumber(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                    onChange={(e) => setEmployeeNumber(e.target.value)}
                     required
                     className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={language === 'ko' ? '8자리 사원번호' : '8-digit employee number'}
+                    placeholder={language === 'ko' ? '사원번호를 입력하세요' : 'Enter employee number'}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -293,12 +277,10 @@ export default function LoginPage() {
                 </label>
                 <input
                   type="text"
-                  inputMode="numeric"
-                  maxLength={8}
                   value={signupEmployeeNumber}
-                  onChange={(e) => setSignupEmployeeNumber(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                  onChange={(e) => setSignupEmployeeNumber(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={language === 'ko' ? '8자리 사원번호' : '8-digit employee number'}
+                  placeholder={language === 'ko' ? '사원번호를 입력하세요' : 'Enter employee number'}
                   required
                 />
                 <p className="text-xs text-slate-500 mt-1">

@@ -1,5 +1,6 @@
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
+import RightSidebar from '@/components/RightSidebar';
 import Card from '@/components/Card';
 
 export default function EmployeePage() {
@@ -7,6 +8,7 @@ export default function EmployeePage() {
     <div className="min-h-screen bg-slate-50">
       <Sidebar />
       <Navbar />
+      <RightSidebar />
       
       <main className="ml-64 mr-80 mt-16 bg-slate-100 min-h-[calc(100vh-4rem)] p-6">
         <div className="max-w-full mx-auto">

@@ -3,16 +3,14 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
+import RightSidebar from '@/components/RightSidebar';
 import Card from '@/components/Card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useDashboardRefresh } from '@/contexts/DashboardRefreshContext';
-import { apiUrl, authApiUrl, authHeader, TOKEN_STORAGE_KEY } from '@/lib/api-client';
 
 export default function SettingsPage() {
   const { user, updateUser } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const { notificationEnabled, setNotificationEnabled } = useDashboardRefresh();
   const [name, setName] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -57,11 +55,10 @@ export default function SettingsPage() {
     setMessage(null);
 
     try {
-      const response = await fetch(authApiUrl('/api/auth/update-name'), {
+      const response = await fetch('/api/auth/update-name', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...authHeader(),
         },
         body: JSON.stringify({ name: trimmed }),
       });
@@ -73,9 +70,6 @@ export default function SettingsPage() {
         // 사용자 정보 업데이트
         if (data.user) {
           updateUser(data.user);
-        }
-        if (data.token && typeof window !== 'undefined') {
-          window.localStorage.setItem(TOKEN_STORAGE_KEY, String(data.token));
         }
       } else {
         setMessage({ type: 'error', text: data.error || t('settings.nameUpdateFailed') });
@@ -92,6 +86,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-slate-50">
       <Sidebar />
       <Navbar />
+      <RightSidebar />
       
       <main className="ml-64 mr-80 mt-16 bg-slate-100 min-h-[calc(100vh-4rem)] p-6">
         <div className="max-w-full mx-auto">
@@ -184,27 +179,6 @@ export default function SettingsPage() {
 
             <Card title={t('settings.notifications')}>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-900">{t('settings.browserNotification')}</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notificationEnabled}
-                      onChange={() => {
-                        if (!notificationEnabled && 'Notification' in window && Notification.permission === 'default') {
-                          Notification.requestPermission().then((permission) => {
-                            setNotificationEnabled(permission === 'granted');
-                          });
-                        } else {
-                          setNotificationEnabled(!notificationEnabled);
-                        }
-                      }}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
-                    <span className="ms-2 text-sm text-slate-600">{notificationEnabled ? (language === 'ko' ? 'ON' : 'On') : (language === 'ko' ? 'OFF' : 'Off')}</span>
-                  </label>
-                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-900">{t('settings.emailNotification')}</span>
                   <input type="checkbox" className="w-4 h-4" defaultChecked />
