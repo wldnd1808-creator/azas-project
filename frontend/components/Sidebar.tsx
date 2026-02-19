@@ -12,6 +12,8 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
+  LineChart,
+  FileText,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -27,7 +29,7 @@ export default function Sidebar() {
   // 현재 경로에 따라 해당 섹션 자동 열기
   useEffect(() => {
     const monitoringPaths = ['/process-model', '/dashboard', '/sensor-chart', '/lot-status'];
-    const analysisPaths = ['/analytics', '/defect-analysis'];
+    const analysisPaths = ['/analytics', '/defect-analysis', '/what-if', '/energy-visualization', '/analysis/ai-report'];
     
     if (monitoringPaths.includes(pathname)) {
       setIsMonitoringOpen(true);
@@ -45,8 +47,11 @@ export default function Sidebar() {
   ];
 
   const analysisItems = [
+    { name: t('sidebar.energyVisualization'), href: '/energy-visualization', icon: Activity },
+    { name: t('sidebar.defectAnalysis'), href: '/defect-analysis', icon: AlertTriangle },
     { name: language === 'ko' ? '불량 원인 분석' : 'Defect Root Cause Analysis', href: '/analytics', icon: BarChart3 },
-    { name: language === 'ko' ? '품질 불량 분석' : 'Quality Defect Analysis', href: '/defect-analysis', icon: AlertTriangle },
+    { name: 'What-If 시뮬레이션', href: '/what-if', icon: LineChart },
+    { name: language === 'ko' ? 'AI 최적화 보고서' : 'AI Optimization Report', href: '/analysis/ai-report', icon: FileText },
   ];
 
   return (
@@ -108,7 +113,7 @@ export default function Sidebar() {
               onClick={() => setIsAnalysisOpen(!isAnalysisOpen)}
               className="w-full text-left flex items-center justify-between px-4 py-2 text-slate-900 font-semibold hover:bg-slate-50 rounded-lg transition-colors"
             >
-              <span>{language === 'ko' ? '분석' : 'Analysis'}</span>
+              <span>{t('sidebar.intelligentAnalysis')}</span>
               {isAnalysisOpen ? (
                 <ChevronDown className="w-4 h-4" />
               ) : (
