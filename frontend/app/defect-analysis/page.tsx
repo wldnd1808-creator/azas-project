@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import RightSidebar from '@/components/RightSidebar';
 import Card from '@/components/Card';
 import Toast from '@/components/Toast';
+import WhatIfSimulationPanel from '@/components/WhatIfSimulationPanel';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 function addCommunityLog() {
@@ -209,6 +210,7 @@ export default function DefectAnalysisPage() {
   const [warningShown, setWarningShown] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
   const [approvedAt, setApprovedAt] = useState<number | null>(null);
+  const [, setSimulationActive] = useState(false);
 
   const handleDangerEnter = useCallback(() => {
     if (!warningShown) {
@@ -285,19 +287,27 @@ export default function DefectAnalysisPage() {
             </p>
           </div>
 
-          <Card
-            title={language === 'ko' ? 'Humidity 구간별 불량률' : 'Defect Rate by Humidity'}
-            className="mb-6"
-          >
-            <HumidityDefectChart currentHumidity={Math.round(currentHumidity)} onDangerEnter={handleDangerEnter} />
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+            <div>
+              <Card
+                title={language === 'ko' ? 'Humidity 구간별 불량률' : 'Defect Rate by Humidity'}
+                className="mb-6"
+              >
+                <HumidityDefectChart currentHumidity={Math.round(currentHumidity)} onDangerEnter={handleDangerEnter} />
+              </Card>
 
-          <Card
-            title={language === 'ko' ? '불량률 추이' : 'Defect Rate Trend'}
-            className="mb-6"
-          >
-            <DefectTrendChart approvedAt={approvedAt} />
-          </Card>
+              <Card
+                title={language === 'ko' ? '불량률 추이' : 'Defect Rate Trend'}
+                className="mb-6"
+              >
+                <DefectTrendChart approvedAt={approvedAt} />
+              </Card>
+            </div>
+
+            <div className="lg:min-h-[480px] lg:sticky lg:top-24">
+              <WhatIfSimulationPanel onSimulationActiveChange={setSimulationActive} />
+            </div>
+          </div>
         </div>
       </main>
 

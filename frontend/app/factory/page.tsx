@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import RightSidebar from '@/components/RightSidebar';
 import { type MachineDetail } from '@/components/Process3D';
+import { AlertTriangle, Cpu, AlertCircle, Package, TrendingDown, TrendingUp } from 'lucide-react';
 
 const Process3DWithSSR = dynamic(() => import('@/components/Process3D'), {
   ssr: false,
@@ -135,6 +136,44 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }>
   error: { bg: 'bg-red-500/30', text: 'text-red-400', label: 'ERROR' },
 };
 
+/** KPI 카드 더미 데이터 */
+const KPI_DATA = [
+  {
+    title: '금일 전체 불량률',
+    value: '1.2%',
+    change: '0.2% ↓',
+    changeColor: 'text-emerald-600',
+    icon: AlertTriangle,
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-500',
+  },
+  {
+    title: '가동 중인 설비',
+    value: '18 / 20대',
+    sub: '정상 작동 중',
+    icon: Cpu,
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-500',
+  },
+  {
+    title: '주요 불량 원인',
+    value: 'process_time',
+    sub: '1위 항목',
+    icon: AlertCircle,
+    iconBg: 'bg-orange-100',
+    iconColor: 'text-orange-500',
+  },
+  {
+    title: '금일 생산량',
+    value: '12,540개',
+    change: '5% ↑',
+    changeColor: 'text-red-600',
+    icon: Package,
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-500',
+  },
+];
+
 export default function FactoryPage() {
   const [selectedMachineId, setSelectedMachineId] = useState<string | null>(null);
   const selectedMachine = selectedMachineId ? MACHINE_DATA[selectedMachineId] ?? null : null;
@@ -152,6 +191,35 @@ export default function FactoryPage() {
         <div className="p-6">
           <h1 className="text-2xl font-bold text-slate-900 mb-1">설비 모니터링</h1>
           <p className="text-slate-600 text-sm mb-6">설비를 클릭하면 상세 데이터를 확인할 수 있습니다.</p>
+
+          {/* KPI 카드 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {KPI_DATA.map((kpi, idx) => {
+              const Icon = kpi.icon;
+              return (
+                <div
+                  key={idx}
+                  className="relative overflow-hidden bg-white rounded-xl border border-slate-100 p-5 transition-shadow hover:shadow-lg"
+                  style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04)' }}
+                >
+                  <div className={`absolute top-4 right-4 w-10 h-10 rounded-lg ${kpi.iconBg} flex items-center justify-center ${kpi.iconColor}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-600 mb-1">{kpi.title}</h3>
+                  <p className="text-2xl font-bold text-slate-900 tracking-tight">{kpi.value}</p>
+                  {kpi.change && (
+                    <p className={`text-sm font-medium mt-1 flex items-center gap-1 ${kpi.changeColor}`}>
+                      전일 대비 {kpi.change}
+                      {kpi.change.includes('↓') ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                    </p>
+                  )}
+                  {kpi.sub && !kpi.change && (
+                    <p className="text-sm text-slate-500 mt-1">{kpi.sub}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
           <div className="relative">
             <Process3DWithSSR

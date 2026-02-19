@@ -8,6 +8,13 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // /what-if 접속 시 What-If가 있는 analytics 페이지 내용 표시 (404 방지)
+  async rewrites() {
+    return [
+      { source: '/what-if', destination: '/analytics' },
+      { source: '/what-if/', destination: '/analytics' },
+    ];
+  },
 };
 
 export default nextConfig;

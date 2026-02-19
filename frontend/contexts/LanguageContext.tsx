@@ -63,6 +63,9 @@ const translations: Record<Language, Record<string, string>> = {
     'sidebar.analytics': '불량 원인 분석',
     'sidebar.qualityHeatmap': 'LOT별 합격·불합격',
     'sidebar.defectAnalysis': '최근 품질 불량 분석',
+    'sidebar.energyVisualization': '에너지 시각 분석',
+    'sidebar.analysisSection': '분석',
+    'sidebar.intelligentAnalysis': '분석',
     'sidebar.sensorChart': '센서 차트',
     'sidebar.settings': '설정',
     
@@ -288,6 +291,9 @@ const translations: Record<Language, Record<string, string>> = {
     'sidebar.analytics': 'Defect Root Cause Analysis',
     'sidebar.qualityHeatmap': 'LOT Pass / Fail',
     'sidebar.defectAnalysis': 'Recent Quality Defect Analysis',
+    'sidebar.energyVisualization': 'Energy Visual Analysis',
+    'sidebar.analysisSection': 'Analysis',
+    'sidebar.intelligentAnalysis': 'Analysis',
     'sidebar.sensorChart': 'Sensor Chart',
     'sidebar.settings': 'Settings',
     

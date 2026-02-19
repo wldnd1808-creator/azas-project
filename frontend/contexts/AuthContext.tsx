@@ -43,6 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
         return;
       }
+      // [임시] admin/1234 bypass 토큰이면 API 호출 없이 로그인 유지
+      if (token === 'temp_admin_bypass') {
+        setUser({
+          employeeNumber: 'admin',
+          name: '관리자',
+          role: 'admin',
+        });
+        setIsLoading(false);
+        return;
+      }
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), SESSION_CHECK_TIMEOUT_MS);
       try {
@@ -87,6 +97,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (employeeNumber: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      // [임시] DB 연결 불가 시: admin / 1234 로 무조건 메인 페이지 이동
+      if (employeeNumber === 'admin' && password === '1234') {
+        const tempUser: User = {
+          employeeNumber: 'admin',
+          name: '관리자',
+          role: 'admin',
+        };
+        setUser(tempUser);
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(TOKEN_STORAGE_KEY, 'temp_admin_bypass');
+        }
+        router.push('/');
+        return { success: true };
+      }
+
       const response = await fetch(authApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: {

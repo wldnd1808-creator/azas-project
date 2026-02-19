@@ -199,7 +199,17 @@ export default function AnalyticsPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+          {/* What-If 시뮬레이션: 상단 고정 노출 (항상 보이도록) */}
+          <section className="mb-6">
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">
+              {language === 'ko' ? 'What-If 시뮬레이션' : 'What-If Simulation'}
+            </h3>
+            <div className="w-full max-w-[360px]">
+              <WhatIfSimulationPanel onSimulationActiveChange={setSimulationActive} />
+            </div>
+          </section>
+
+          <div className="grid grid-cols-1 gap-6">
             <div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <Card title={language === 'ko' ? '현재 습도' : 'Current Humidity'}>
@@ -321,10 +331,6 @@ export default function AnalyticsPage() {
               </table>
             </div>
           </Card>
-            </div>
-
-            <div className="lg:min-h-[480px] lg:sticky lg:top-24">
-              <WhatIfSimulationPanel onSimulationActiveChange={setSimulationActive} />
             </div>
           </div>
         </div>
