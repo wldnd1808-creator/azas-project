@@ -16,7 +16,6 @@ import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useRightSidebar } from '@/contexts/RightSidebarContext';
 
 const MAIN_ITEMS = [
   { nameKo: '설비 모니터링', nameEn: 'Equipment Monitoring', href: '/factory', icon: Factory },
@@ -31,7 +30,6 @@ export default function Home() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const { language } = useLanguage();
-  const { alertsPanelOpen, alertsSidebarWidth, rightSidebarOpen, rightSidebarWidth } = useRightSidebar();
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
@@ -66,12 +64,7 @@ export default function Home() {
       <Sidebar />
       <Navbar />
 
-      <main 
-        className="ml-64 mt-16 bg-slate-100 min-h-[calc(100vh-4rem)] p-6 overflow-x-hidden transition-all duration-200"
-        style={{
-          marginRight: alertsPanelOpen ? `${alertsSidebarWidth}px` : (rightSidebarOpen ? `${rightSidebarWidth}px` : '0px'),
-        }}
-      >
+      <main className="ml-64 mt-16 bg-slate-100 min-h-[calc(100vh-4rem)] p-6 overflow-x-hidden">
         <div className="max-w-full mx-auto">
           <div className="relative flex flex-col items-center justify-start">
             {/* 메인 전체 흐릿한 배경 이미지 */}
