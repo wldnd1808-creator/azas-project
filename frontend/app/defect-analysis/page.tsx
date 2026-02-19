@@ -5,7 +5,6 @@ import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import RightSidebar from '@/components/RightSidebar';
 import Card from '@/components/Card';
-import Toast from '@/components/Toast';
 import WhatIfSimulationPanel from '@/components/WhatIfSimulationPanel';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -208,7 +207,6 @@ export default function DefectAnalysisPage() {
   const [currentHumidity, setCurrentHumidity] = useState(70);
   const [showWarning, setShowWarning] = useState(false);
   const [warningShown, setWarningShown] = useState(false);
-  const [toastVisible, setToastVisible] = useState(false);
   const [approvedAt, setApprovedAt] = useState<number | null>(null);
   const [, setSimulationActive] = useState(false);
 
@@ -244,7 +242,6 @@ export default function DefectAnalysisPage() {
     const startH = currentHumidity;
     setShowWarning(false);
     setApprovedAt(Date.now());
-    setToastVisible(true);
     addCommunityLog();
 
     const targetH = 65;
@@ -310,12 +307,6 @@ export default function DefectAnalysisPage() {
           </div>
         </div>
       </main>
-
-      <Toast
-        message="제습 설비가 강으로 조절되었습니다. 습도 수치가 하향 안정화됩니다."
-        isVisible={toastVisible}
-        onClose={() => setToastVisible(false)}
-      />
 
       <HumidityWarningModal
         isOpen={showWarning}

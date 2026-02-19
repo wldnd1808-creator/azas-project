@@ -13,6 +13,8 @@ const nextConfig = {
     return [
       { source: '/what-if', destination: '/analytics' },
       { source: '/what-if/', destination: '/analytics' },
+      { source: '/analysis/ai-report', destination: '/ai-report' },
+      { source: '/analysis/ai-report/', destination: '/ai-report' },
     ];
   },
 };

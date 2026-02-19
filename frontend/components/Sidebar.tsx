@@ -28,7 +28,7 @@ export default function Sidebar() {
   // 현재 경로에 따라 해당 섹션 자동 열기
   useEffect(() => {
     const monitoringPaths = ['/process-model', '/dashboard', '/sensor-chart', '/lot-status'];
-    const analysisPaths = ['/analytics', '/defect-analysis', '/what-if', '/energy-visualization', '/analysis/ai-report'];
+    const analysisPaths = ['/analytics', '/defect-analysis', '/what-if', '/energy-visualization', '/ai-report'];
     
     if (monitoringPaths.includes(pathname)) {
       setIsMonitoringOpen(true);
@@ -50,7 +50,7 @@ export default function Sidebar() {
     { name: t('sidebar.defectAnalysis'), href: '/defect-analysis', icon: AlertTriangle },
     { name: language === 'ko' ? '불량 원인 분석' : 'Defect Root Cause Analysis', href: '/analytics', icon: BarChart3 },
     { name: 'What-If 시뮬레이션', href: '/what-if', icon: LineChart },
-    { name: language === 'ko' ? 'AI 최적화 보고서' : 'AI Optimization Report', href: '/analysis/ai-report', icon: ClipboardList },
+    { name: language === 'ko' ? 'AI 최적화 보고서' : 'AI Optimization Report', href: '/ai-report', icon: ClipboardList },
   ];
 
   return (

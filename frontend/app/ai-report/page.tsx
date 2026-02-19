@@ -26,7 +26,7 @@ const MAIN_ITEMS = [
   { nameKo: '에너지 시각 분석', nameEn: 'Energy Visualization', href: '/energy-visualization', icon: Zap },
 ] as const;
 
-export default function Home() {
+export default function AiReportPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const { language } = useLanguage();
@@ -89,27 +89,27 @@ export default function Home() {
 
             {/* 6개 메뉴: 칸만 불투명 배경으로 배경 이미지 안 비치게 */}
             <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {MAIN_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const name = language === 'ko' ? item.nameKo : item.nameEn;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group flex items-center gap-5 p-8 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 hover:bg-slate-50 transition-all duration-200 text-left"
-              >
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                  <Icon className="h-8 w-8" />
-                </div>
-                <div className="min-w-0 flex-1 text-center">
-                  <span className="text-lg font-semibold text-slate-900 group-hover:text-blue-700 transition-colors whitespace-normal [word-break:keep-all]">
-                    {name}
-                  </span>
-                </div>
-                <ChevronRight className="h-6 w-6 shrink-0 text-slate-400 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
-              </Link>
-            );
-          })}
+              {MAIN_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const name = language === 'ko' ? item.nameKo : item.nameEn;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="group flex items-center gap-5 p-8 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 hover:bg-slate-50 transition-all duration-200 text-left"
+                  >
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                      <Icon className="h-8 w-8" />
+                    </div>
+                    <div className="min-w-0 flex-1 text-center">
+                      <span className="text-lg font-semibold text-slate-900 group-hover:text-blue-700 transition-colors whitespace-normal [word-break:keep-all]">
+                        {name}
+                      </span>
+                    </div>
+                    <ChevronRight className="h-6 w-6 shrink-0 text-slate-400 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
