@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronRight,
   LineChart,
+  FileText,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -50,7 +51,7 @@ export default function Sidebar() {
     { name: t('sidebar.defectAnalysis'), href: '/defect-analysis', icon: AlertTriangle },
     { name: language === 'ko' ? '불량 원인 분석' : 'Defect Root Cause Analysis', href: '/analytics', icon: BarChart3 },
     { name: 'What-If 시뮬레이션', href: '/what-if', icon: LineChart },
-    { name: language === 'ko' ? 'AI 최적화 보고서' : 'AI Optimization Report', href: '/ai-report', icon: ClipboardList },
+    { name: language === 'ko' ? 'AI 최적화 보고서' : 'AI Optimization Report', href: '/ai-report', icon: FileText },
   ];
 
   return (
